@@ -1,0 +1,77 @@
+<!-- templates/jobs/job_detail.html -->
+{% extends "_base/base.html" %}
+{% load humanize %}
+
+{% block title %}{{ job.name }} — Détail{% endblock %}
+
+{% block content %}
+  <a href="{% url 'jobs:job_list' %}" class="btn btn-link px-0 mb-3">← Retour aux offres</a>
+
+  <div class="card p-4">
+    <div class="d-flex flex-wrap gap-3 align-items-start">
+      {% if job.image %}
+        <img src="{{ job.image.url }}" alt="" class="rounded" style="width:120px;height:120px;object-fit:cover;">
+      {% endif %}
+
+      <div class="flex-grow-1">
+        <h1 class="h3 mb-1">{{ job.name }}</h1>
+        <div class="text-muted">
+          {% if job.company %}{{ job.company.name }}{% endif %}
+          {% if job.place %} • {{ job.place }}{% endif %}
+        </div>
+
+        <div class="mt-2 d-flex flex-wrap gap-2">
+          {% if job.contract_type %}
+            <span class="badge text-bg-secondary">{{ job.contract_type }}</span>
+          {% endif %}
+          {% if job.salary %}
+            <span class="badge text-bg-light">{{ job.salary }}</span>
+          {% endif %}
+          {% if job.experience %}
+            <span class="badge text-bg-light">{{ job.experience }}</span>
+          {% endif %}
+          {% if job.duration %}
+            <span class="badge text-bg-light">{{ job.duration }}</span>
+          {% endif %}
+        </div>
+
+        <div class="small text-muted mt-2">
+          {% if job.published_at %}Publiée {{ job.published_at|naturaltime }}{% else %}Créée {{ job.created_at|naturaltime }}{% endif %}
+          • {{ job.views_number|intcomma }} vues
+        </div>
+      </div>
+
+      <div class="ms-auto">
+        <!-- Bouton de candidature : adapte l’URL (formulaire interne, mailto, etc.) -->
+        <a class="btn btn-primary btn-lg" href="#">Postuler</a>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    {% if job.description %}
+      <article class="prose">
+        {{ job.description|linebreaks }}
+      </article>
+    {% else %}
+      <p class="text-muted">Aucune description fournie.</p>
+    {% endif %}
+
+    {% if job.company %}
+      <hr class="my-4">
+      <div class="d-flex align-items-center gap-3">
+        {% if job.company.logo %}
+          <img src="{{ job.company.logo.url }}" class="rounded" alt="" style="width:56px;height:56px;object-fit:cover;">
+        {% endif %}
+        <div>
+          <div class="fw-semibold">{{ job.company.name }}</div>
+          <div class="small text-muted">
+            {% if job.company.website %}<a href="{{ job.company.website }}" target="_blank" rel="noopener">Site web</a>{% endif %}
+            {% if job.company.email %}{% if job.company.website %} • {% endif %}<a href="mailto:{{ job.company.email }}">{{ job.company.email }}</a>{% endif %}
+            {% if job.company.phone %}{% if job.company.email or job.company.website %} • {% endif %}{{ job.company.phone }}{% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

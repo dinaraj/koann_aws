@@ -1,0 +1,106 @@
+<!-- templates/jobs/job_list.html -->
+{% extends "_base/base.html" %}
+{% load humanize %}
+
+{% block title %}Offres d'emploi{% endblock %}
+
+{% block content %}
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 m-0">
+      Offres d’emploi
+      <span class="badge rounded-pill text-bg-secondary">{{ jobs.paginator.count|default:0 }}</span>
+    </h1>
+    <form class="d-flex" method="get">
+      <input class="form-control me-2" type="search" name="q" placeholder="Rechercher (poste, lieu, entreprise)" value="{{ q|default:'' }}">
+      <button class="btn btn-primary" type="submit">Rechercher</button>
+    </form>
+  </div>
+
+  {% if jobs %}
+    <div class="row g-3">
+      {% for job in jobs %}
+        <div class="col-12">
+          <div class="card p-3">
+            <div class="d-flex align-items-start gap-3">
+              {% if job.image %}
+                <img src="{{ job.image.url }}" alt="" class="rounded" style="width:96px;height:96px;object-fit:cover;">
+              {% else %}
+                <div class="rounded bg-light d-flex align-items-center justify-content-center" style="width:96px;height:96px;">🧰</div>
+              {% endif %}
+
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <a href="{{ job.get_absolute_url }}" class="text-decoration-none">
+                      <h2 class="h5 mb-1">{{ job.name }}</h2>
+                    </a>
+                    <div class="text-muted">
+                      {% if job.company %}{{ job.company.name }}{% endif %}
+                      {% if job.place %} • {{ job.place }}{% endif %}
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    {% if job.contract_type %}
+                      <span class="badge badge-soft">{{ job.contract_type }}</span>
+                    {% endif %}
+                    {% if job.salary %}
+                      <div class="mt-1"><span class="badge text-bg-light">{{ job.salary }}</span></div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if job.description %}
+                  <p class="mt-2 mb-2 text-secondary">{{ job.description|truncatewords:30 }}</p>
+                {% endif %}
+
+                <div class="d-flex gap-3 small text-muted">
+                  {% if job.published_at %}
+                    <span>Publiée {{ job.published_at|naturaltime }}</span>
+                  {% else %}
+                    <span>Créée {{ job.created_at|naturaltime }}</span>
+                  {% endif %}
+                  {% if job.experience %}<span>• {{ job.experience }}</span>{% endif %}
+                  {% if job.duration %}<span>• {{ job.duration }}</span>{% endif %}
+                  <span>• {{ job.views_number|intcomma }} vues</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if jobs.paginator.num_pages > 1 %}
+      <nav class="mt-4" aria-label="Pagination">
+        <ul class="pagination">
+          {% if jobs.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ jobs.previous_page_number }}">Précédent</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Précédent</span></li>
+          {% endif %}
+
+          {% for num in jobs.paginator.page_range %}
+            {% if jobs.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > jobs.number|add:'-3' and num < jobs.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if jobs.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ jobs.next_page_number }}">Suivant</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Suivant</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="alert alert-light border">Aucune offre trouvée.</div>
+  {% endif %}
+{% endblock %}
