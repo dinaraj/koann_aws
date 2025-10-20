@@ -1,0 +1,14 @@
+services:
+  koann-web:
+    command: python manage.py runserver 0.0.0.0:8000
+
+    # Monte le code pour hot reload
+    volumes:
+      - .:/app
+
+    environment:
+      DJANGO_DEBUG: "True"
+
+    # Evite les problemes de permissions avec appuser
+    user: root
+
