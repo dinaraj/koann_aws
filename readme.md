@@ -40,10 +40,11 @@ docker compose up --build
 
 L’application sera disponible sur http://localhost:8000
 
-### 5. Exécuter les migrations
+### 5. Exécuter les migrations et collectstatic
 
 ```bash
 docker compose run --rm koann-web python manage.py migrate
+docker compose run --rm koann-web python manage.py collectstatic
 ```
 
 ### 6. Créer un superutilisateur

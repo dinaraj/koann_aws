@@ -5,3 +5,4 @@ fontawesomefree==6.6.0
 Pillow==11.3.0
 psycopg==3.2.10
 gunicorn==23.0.0
+whitenoise==6.11.0

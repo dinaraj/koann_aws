@@ -62,6 +62,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -182,13 +183,16 @@ if AWS_STORAGE:
     STATIC_URL = f"{AWS_S3_BASE_URL}static/"
 
 else:
+    # STORAGES = {
+    #     "staticfiles": {
+    #         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    #     },
+    # }
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -225,7 +229,6 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_AUTHENTICATION_METHODS = {'email'}
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 7
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
