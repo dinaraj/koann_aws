@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool, default=False)
+DEBUG = config('DJANGO_DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', cast=Csv(), default=[])
 
@@ -143,10 +143,52 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# S3 STORAGE (MEDIA)
+AWS_STORAGE = config('AWS_STORAGE', default=False, cast=bool)
+if AWS_STORAGE:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "access_key": config('AWS_ACCESS_KEY_ID', ''),
+                "secret_key": config('AWS_SECRET_ACCESS_KEY', ''),
+                "bucket_name": config('AWS_S3_BUCKET_NAME', ''),
+                "region_name": config('AWS_S3_REGION_NAME', ''),
+                "location": "media",  # Dossier pour les fichiers media
+                "file_overwrite": False,
+                "custom_domain": None,
+                "addressing_style": "virtual",  # important
+                "querystring_auth": False,  # no signature
+            }
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3.S3StaticStorage",
+            "OPTIONS": {
+                "access_key": config('AWS_ACCESS_KEY_ID', ''),
+                "secret_key": config('AWS_SECRET_ACCESS_KEY', ''),
+                "bucket_name": config('AWS_S3_BUCKET_NAME', ''),
+                "region_name": config('AWS_S3_REGION_NAME', ''),
+                "location": "static",  # Dossier pour les fichiers static
+                "file_overwrite": True,  # True pour les static (optimisation)
+                "custom_domain": None,
+                "addressing_style": "virtual",
+                "querystring_auth": False,
+            },
+        },
+    }
+
+    AWS_S3_BASE_URL = f"https://{config('AWS_S3_BUCKET_NAME', '')}.s3.{config('AWS_S3_REGION_NAME', '')}.amazonaws.com/"
+    MEDIA_URL = f"{AWS_S3_BASE_URL}media/"
+    STATIC_URL = f"{AWS_S3_BASE_URL}static/"
+
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -183,11 +225,12 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_AUTHENTICATION_METHODS = {'email'}
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 7
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'email'
 ACCOUNT_RATE_LIMITS = {'login_failed': "10/m/ip,5/5m/key"}  # https://docs.allauth.org/en/latest/account/rate_limits.html
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'common:index'
